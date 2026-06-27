@@ -7,8 +7,19 @@ export const http = axios.create({
   headers: { 'Content-Type': 'application/json' },
 });
 
+function readAccessToken(): string | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = localStorage.getItem('auth');
+    if (!raw) return null;
+    return JSON.parse(raw)?.state?.accessToken ?? null;
+  } catch {
+    return null;
+  }
+}
+
 http.interceptors.request.use((config) => {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
+  const token = readAccessToken();
   if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
