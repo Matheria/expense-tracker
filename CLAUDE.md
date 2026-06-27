@@ -78,6 +78,23 @@ This project uses the Base UI variant of shadcn (Tailwind CSS 4). The `form.tsx`
 
 Key libraries: `react-hook-form` + `zod` + `@hookform/resolvers` for forms; `zustand` (with `persist`) for client state; `axios` for HTTP.
 
+## Branch Strategy — GitHub Flow
+
+We use [GitHub Flow](https://docs.github.com/en/get-started/using-github/github-flow):
+
+- **`master`** — production-ready at all times; never commit directly
+- **`feat/<short-description>`** — new features (e.g. `feat/frontend-home-screen`)
+- **`fix/<short-description>`** — bug fixes (e.g. `fix/auth-token-refresh`)
+- **`chore/<short-description>`** — tooling, deps, config (e.g. `chore/update-prisma`)
+
+**Workflow:**
+1. Branch off `master`: `git checkout -b feat/<name>`
+2. Commit early and often on the feature branch
+3. Open a PR into `master` when ready for review
+4. Merge only after review; delete the branch after merge
+
+Branch names: lowercase, hyphens only, no slashes beyond the type prefix.
+
 ## Commit Convention
 
 [Conventional Commits](https://www.conventionalcommits.org/) — `type: short description` in imperative mood, lowercase, no period.
