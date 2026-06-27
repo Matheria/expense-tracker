@@ -78,6 +78,22 @@ This project uses the Base UI variant of shadcn (Tailwind CSS 4). The `form.tsx`
 
 Key libraries: `react-hook-form` + `zod` + `@hookform/resolvers` for forms; `zustand` (with `persist`) for client state; `axios` for HTTP.
 
+## Commit Convention
+
+[Conventional Commits](https://www.conventionalcommits.org/) — `type: short description` in imperative mood, lowercase, no period.
+
+| Type | When to use |
+|---|---|
+| `feat` | new feature or endpoint |
+| `fix` | bug fix |
+| `style` | formatting / visual changes, no logic |
+| `refactor` | code restructure, no behavior change |
+| `chore` | tooling, deps, config, migrations |
+| `docs` | documentation only |
+| `test` | adding or updating tests |
+
+Body is optional — use it when the **why** isn't obvious from the title.
+
 ## Code Style
 
 - Prettier: single quotes, semicolons, trailing commas, 100 char width
