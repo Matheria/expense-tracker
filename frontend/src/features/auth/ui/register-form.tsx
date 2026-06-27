@@ -128,7 +128,7 @@ export function RegisterForm() {
                   Согласен с{' '}
                   <Link
                     href="/terms"
-                    className="text-primary underline-offset-4 hover:underline"
+                    className="text-primary underline underline-offset-4 hover:opacity-60 transition-opacity"
                     target="_blank"
                   >
                     пользовательским соглашением
@@ -136,7 +136,7 @@ export function RegisterForm() {
                   и{' '}
                   <Link
                     href="/privacy"
-                    className="text-primary underline-offset-4 hover:underline"
+                    className="text-primary underline underline-offset-4 hover:opacity-60 transition-opacity"
                     target="_blank"
                   >
                     политикой обработки данных
