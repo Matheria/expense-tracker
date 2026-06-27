@@ -19,6 +19,14 @@ export interface TransactionSummary {
   }>;
 }
 
+export interface PaginatedTransactions {
+  data: Transaction[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
 @Injectable()
 export class TransactionService {
   constructor(private readonly prisma: PrismaService) {}
@@ -28,7 +36,7 @@ export class TransactionService {
     return this.prisma.transaction.create({ data: { ...dto, userId } });
   }
 
-  findAll(userId: string, query: QueryTransactionsDto): Promise<Transaction[]> {
+  async findAll(userId: string, query: QueryTransactionsDto): Promise<PaginatedTransactions> {
     const where: Prisma.TransactionWhereInput = { userId };
     if (query.type) where.type = query.type;
     if (query.categoryId) where.categoryId = query.categoryId;
@@ -37,7 +45,17 @@ export class TransactionService {
       if (query.dateFrom) where.date.gte = new Date(query.dateFrom);
       if (query.dateTo) where.date.lte = new Date(query.dateTo);
     }
-    return this.prisma.transaction.findMany({ where, orderBy: { date: 'desc' } });
+
+    const page = query.page ?? 1;
+    const limit = query.limit ?? 10;
+    const skip = (page - 1) * limit;
+
+    const [data, total] = await this.prisma.$transaction([
+      this.prisma.transaction.findMany({ where, orderBy: { date: 'desc' }, skip, take: limit }),
+      this.prisma.transaction.count({ where }),
+    ]);
+
+    return { data, total, page, limit, totalPages: Math.ceil(total / limit) };
   }
 
   async findOne(userId: string, id: string): Promise<Transaction> {
