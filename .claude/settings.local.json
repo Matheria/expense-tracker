@@ -17,7 +17,11 @@
       "Bash(pnpm --filter backend exec tsc --noEmit)",
       "Bash(pnpm --filter frontend exec tsc --noEmit)",
       "Bash(git ls-remote *)",
-      "Bash(git commit *)"
+      "Bash(git commit *)",
+      "Bash(git push *)",
+      "WebFetch(domain:docs.nestjs.com)",
+      "Bash(docker compose *)",
+      "Bash(python -m json.tool)"
     ]
   }
 }

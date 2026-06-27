@@ -57,22 +57,6 @@ We use [GitHub Flow](https://docs.github.com/en/get-started/using-github/github-
 
 Branch names: lowercase, hyphens only, no slashes beyond the type prefix.
 
-## Commit Convention
-
-[Conventional Commits](https://www.conventionalcommits.org/) — `type: short description` in imperative mood, lowercase, no period.
-
-| Type       | When to use                           |
-| ---------- | ------------------------------------- |
-| `feat`     | new feature or endpoint               |
-| `fix`      | bug fix                               |
-| `style`    | formatting / visual changes, no logic |
-| `refactor` | code restructure, no behavior change  |
-| `chore`    | tooling, deps, config, migrations     |
-| `docs`     | documentation only                    |
-| `test`     | adding or updating tests              |
-
-Body is optional — use it when the **why** isn't obvious from the title.
-
 ## Pull Requests
 
 Title follows the same Conventional Commits format as commit messages (`type: short description`).
@@ -104,3 +88,7 @@ PR body template:
 - Prettier: single quotes, semicolons, trailing commas, 100 char width
 - ESLint: flat config (ESLint 9), per-app (`frontend/eslint.config.mjs` extends `eslint-config-next`; `backend/eslint.config.mjs` uses `typescript-eslint`)
 - Language: Russian for user-facing UI text (`<html lang="ru">`)
+
+## Обновление docs
+
+При добавлении функционала, проверяй документацию в @.claude/docs/\* и актуализируй
