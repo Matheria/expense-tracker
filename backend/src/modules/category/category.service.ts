@@ -1,5 +1,5 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { Category } from '@prisma/client';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { Category, Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
@@ -21,11 +21,25 @@ export class CategoryService {
     if (!existing || existing.userId !== userId) {
       throw new NotFoundException('Category not found');
     }
-    return this.prisma.category.update({ where: { id }, data: dto });
+    try {
+      return await this.prisma.category.update({ where: { id }, data: dto });
+    } catch (e) {
+      if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2025') {
+        throw new NotFoundException('Category not found');
+      }
+      throw e;
+    }
   }
 
   async remove(userId: string, id: string): Promise<void> {
-    const { count } = await this.prisma.category.deleteMany({ where: { id, userId } });
-    if (count === 0) throw new NotFoundException('Category not found');
+    try {
+      const { count } = await this.prisma.category.deleteMany({ where: { id, userId } });
+      if (count === 0) throw new NotFoundException('Category not found');
+    } catch (e) {
+      if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2003') {
+        throw new ConflictException('Нельзя удалить категорию: есть связанные транзакции');
+      }
+      throw e;
+    }
   }
 }

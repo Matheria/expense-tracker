@@ -55,7 +55,7 @@ export class TransactionService {
       this.prisma.transaction.count({ where }),
     ]);
 
-    return { data, total, page, limit, totalPages: Math.ceil(total / limit) };
+    return { data, total, page, limit, totalPages: Math.ceil(total / limit) || 1 };
   }
 
   async findOne(userId: string, id: string): Promise<Transaction> {
@@ -72,7 +72,14 @@ export class TransactionService {
       throw new NotFoundException('Transaction not found');
     }
     if (dto.categoryId) await this.ensureCategoryOwned(userId, dto.categoryId);
-    return this.prisma.transaction.update({ where: { id }, data: dto });
+    try {
+      return await this.prisma.transaction.update({ where: { id }, data: dto });
+    } catch (e) {
+      if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2025') {
+        throw new NotFoundException('Transaction not found');
+      }
+      throw e;
+    }
   }
 
   async remove(userId: string, id: string): Promise<void> {

@@ -21,7 +21,7 @@ function formatAmount(value: number): string {
 }
 
 function formatDate(value: string): string {
-  return new Date(value).toLocaleDateString('ru-RU');
+  return new Date(value).toLocaleDateString('ru-RU', { timeZone: 'UTC' });
 }
 
 interface TransactionsListProps {
@@ -57,9 +57,9 @@ export function TransactionsList({ refreshKey = 0 }: TransactionsListProps) {
       .then(({ data }) => {
         if (!active) return;
         setTransactions(data.data);
-        setTotalPages(Math.max(1, data.totalPages));
+        setTotalPages(data.totalPages);
         // A refresh may have shrunk the dataset below the current page.
-        if (page > data.totalPages && data.totalPages >= 1) {
+        if (page > data.totalPages) {
           setPage(data.totalPages);
         }
       })

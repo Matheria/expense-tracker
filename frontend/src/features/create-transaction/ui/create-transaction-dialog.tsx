@@ -46,7 +46,8 @@ const transactionSchema = z.object({
 type TransactionFormValues = z.infer<typeof transactionSchema>;
 
 function today(): string {
-  return new Date().toISOString().slice(0, 10);
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
 interface CreateTransactionDialogProps {
@@ -83,7 +84,7 @@ export function CreateTransactionDialog({ onCreated }: CreateTransactionDialogPr
       await transactionApi.create({
         ...values,
         description: values.description || undefined,
-        date: new Date(values.date).toISOString(),
+        date: values.date + 'T00:00:00.000Z',
       });
       form.reset({ amount: '' as unknown as number, type: 'EXPENSE', description: '', date: today(), categoryId: '' });
       setOpen(false);
