@@ -45,6 +45,10 @@ backend/src/
 
 | Variable         | Required | Default | Description                  |
 | ---------------- | -------- | ------- | ---------------------------- |
-| `DATABASE_URL`   | yes      | —       | PostgreSQL connection string  |
-| `JWT_SECRET`     | yes      | —       | Signing secret for JWT        |
+| `DATABASE_URL`   | yes      | —       | PostgreSQL connection string |
+| `JWT_SECRET`     | yes      | —       | Signing secret for JWT       |
 | `JWT_EXPIRATION` | no       | `7d`    | Token lifetime (e.g. `7d`)   |
+
+## Актуализация документации
+
+После изменения любых методов, необходимо актуализировать или добавить JSDoc. А для dto и контроллеров добавить декоракторы swagger
