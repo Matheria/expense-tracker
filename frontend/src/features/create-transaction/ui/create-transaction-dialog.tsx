@@ -1,0 +1,224 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import axios from 'axios';
+
+import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { categoryApi, type Category } from '@/entities/category';
+import { transactionApi } from '@/entities/transaction';
+
+const transactionSchema = z.object({
+  amount: z.coerce.number({ invalid_type_error: 'Введите сумму' }).positive('Сумма должна быть больше 0'),
+  type: z.enum(['INCOME', 'EXPENSE']),
+  description: z.string().max(255, 'Максимум 255 символов').optional(),
+  date: z.string().min(1, 'Укажите дату'),
+  categoryId: z.string().uuid('Выберите категорию'),
+});
+
+type TransactionFormValues = z.infer<typeof transactionSchema>;
+
+function today(): string {
+  return new Date().toISOString().slice(0, 10);
+}
+
+interface CreateTransactionDialogProps {
+  onCreated?: () => void;
+}
+
+export function CreateTransactionDialog({ onCreated }: CreateTransactionDialogProps) {
+  const [open, setOpen] = useState(false);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [serverError, setServerError] = useState<string | null>(null);
+
+  const form = useForm<TransactionFormValues>({
+    resolver: zodResolver(transactionSchema),
+    defaultValues: {
+      amount: undefined as unknown as number,
+      type: 'EXPENSE',
+      description: '',
+      date: today(),
+      categoryId: '',
+    },
+  });
+
+  useEffect(() => {
+    if (!open) return;
+    categoryApi
+      .list()
+      .then(({ data }) => setCategories(data))
+      .catch(() => setCategories([]));
+  }, [open]);
+
+  async function onSubmit(values: TransactionFormValues) {
+    setServerError(null);
+    try {
+      await transactionApi.create({
+        ...values,
+        description: values.description || undefined,
+        date: new Date(values.date).toISOString(),
+      });
+      form.reset({ amount: undefined as unknown as number, type: 'EXPENSE', description: '', date: today(), categoryId: '' });
+      setOpen(false);
+      onCreated?.();
+    } catch (err) {
+      if (axios.isAxiosError(err) && err.response?.status === 401) {
+        setServerError('Сессия истекла. Войдите снова.');
+      } else {
+        setServerError('Не удалось создать транзакцию. Попробуйте позже.');
+      }
+    }
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger render={<Button>Добавить транзакцию</Button>} />
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Новая транзакция</DialogTitle>
+          <DialogDescription>Добавьте доход или расход</DialogDescription>
+        </DialogHeader>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <div className="flex gap-4">
+              <FormField
+                control={form.control}
+                name="amount"
+                render={({ field }) => (
+                  <FormItem className="flex-1">
+                    <FormLabel>Сумма</FormLabel>
+                    <FormControl>
+                      <Input type="number" step="0.01" min="0" placeholder="0.00" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="type"
+                render={({ field }) => (
+                  <FormItem className="flex-1">
+                    <FormLabel>Тип</FormLabel>
+                    <FormControl>
+                      <Select value={field.value} onValueChange={field.onChange}>
+                        <SelectTrigger className="w-full">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="EXPENSE">Расход</SelectItem>
+                          <SelectItem value="INCOME">Доход</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <FormField
+              control={form.control}
+              name="categoryId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Категория</FormLabel>
+                  <FormControl>
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue>
+                          {(value) =>
+                            categories.find((c) => c.id === value)?.name ?? 'Выберите категорию'
+                          }
+                        </SelectValue>
+                      </SelectTrigger>
+                      <SelectContent>
+                        {categories.length === 0 ? (
+                          <SelectItem value="" disabled>
+                            Нет категорий — создайте сначала
+                          </SelectItem>
+                        ) : (
+                          categories.map((category) => (
+                            <SelectItem key={category.id} value={category.id}>
+                              <span style={{ color: category.color }}>{category.icon}</span>
+                              {category.name}
+                            </SelectItem>
+                          ))
+                        )}
+                      </SelectContent>
+                    </Select>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="date"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Дата</FormLabel>
+                  <FormControl>
+                    <Input type="date" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Описание</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Необязательно" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {serverError && <p className="text-destructive text-sm">{serverError}</p>}
+
+            <DialogFooter>
+              <Button type="submit" disabled={form.formState.isSubmitting}>
+                {form.formState.isSubmitting ? 'Сохранение...' : 'Создать'}
+              </Button>
+            </DialogFooter>
+          </form>
+        </Form>
+      </DialogContent>
+    </Dialog>
+  );
+}
