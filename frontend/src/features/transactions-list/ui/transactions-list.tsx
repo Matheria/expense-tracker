@@ -33,7 +33,13 @@ export function TransactionsList({ refreshKey = 0 }: TransactionsListProps) {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [categories, setCategories] = useState<Record<string, Category>>({});
   const [totalPages, setTotalPages] = useState(1);
-  const [loading, setLoading] = useState(true);
+
+  // `loading` is derived: while the key of the latest request differs from the
+  // key we have data for, we are still fetching. This avoids a synchronous
+  // setState inside the fetch effect.
+  const requestKey = `${page}:${refreshKey}`;
+  const [loadedKey, setLoadedKey] = useState<string | null>(null);
+  const loading = loadedKey !== requestKey;
 
   useEffect(() => {
     categoryApi
@@ -46,29 +52,27 @@ export function TransactionsList({ refreshKey = 0 }: TransactionsListProps) {
 
   useEffect(() => {
     let active = true;
-    setLoading(true);
     transactionApi
       .list({ page, limit: PAGE_SIZE })
       .then(({ data }) => {
         if (!active) return;
         setTransactions(data.data);
         setTotalPages(Math.max(1, data.totalPages));
+        // A refresh may have shrunk the dataset below the current page.
+        if (page > data.totalPages && data.totalPages >= 1) {
+          setPage(data.totalPages);
+        }
       })
       .catch(() => {
         if (active) setTransactions([]);
       })
       .finally(() => {
-        if (active) setLoading(false);
+        if (active) setLoadedKey(requestKey);
       });
     return () => {
       active = false;
     };
-  }, [page, refreshKey]);
-
-  // When new data arrives and the current page is now out of range, step back.
-  useEffect(() => {
-    if (page > totalPages) setPage(totalPages);
-  }, [page, totalPages]);
+  }, [page, refreshKey, requestKey]);
 
   return (
     <div className="space-y-4">

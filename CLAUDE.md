@@ -114,5 +114,5 @@ Body is optional — use it when the **why** isn't obvious from the title.
 ## Code Style
 
 - Prettier: single quotes, semicolons, trailing commas, 100 char width
-- ESLint: root config + per-app configs (`frontend/.eslintrc.json`, `backend/.eslintrc.json`)
+- ESLint: flat config (ESLint 9), per-app (`frontend/eslint.config.mjs` extends `eslint-config-next`; `backend/eslint.config.mjs` uses `typescript-eslint`)
 - Language: Russian for user-facing UI text (`<html lang="ru">`)

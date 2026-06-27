@@ -1,22 +1,26 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useSyncExternalStore } from 'react';
 import { useRouter } from 'next/navigation';
 
 import { useAuthStore } from '@/features/auth/model/auth.store';
 import { TransactionsList } from '@/features/transactions-list/ui/transactions-list';
 import { HomeHeader } from '@/widgets/home-header/ui/home-header';
 
+// SSR-safe read of zustand/persist rehydration status, without a mount effect.
+function useHydrated(): boolean {
+  return useSyncExternalStore(
+    (onChange) => useAuthStore.persist.onFinishHydration(onChange),
+    () => useAuthStore.persist.hasHydrated(),
+    () => false,
+  );
+}
+
 export function HomePage() {
   const router = useRouter();
   const accessToken = useAuthStore((s) => s.accessToken);
-  const [hydrated, setHydrated] = useState(false);
+  const hydrated = useHydrated();
   const [refreshKey, setRefreshKey] = useState(0);
-
-  // Wait for zustand/persist to rehydrate before deciding to redirect.
-  useEffect(() => {
-    setHydrated(true);
-  }, []);
 
   useEffect(() => {
     if (hydrated && !accessToken) {
