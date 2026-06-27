@@ -1,21 +1,21 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
 
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { userApi, type User } from '@/entities/user';
-import { useAuthStore } from '@/features/auth/model/auth.store';
 
 function initials(user: User): string {
   const source = user.name?.trim() || user.email;
   return source.slice(0, 2).toUpperCase();
 }
 
-export function ProfileCard() {
-  const router = useRouter();
-  const logout = useAuthStore((s) => s.logout);
+interface ProfileCardProps {
+  onLogout: () => void;
+}
+
+export function ProfileCard({ onLogout }: ProfileCardProps) {
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
@@ -33,11 +33,6 @@ export function ProfileCard() {
     };
   }, []);
 
-  function handleLogout() {
-    logout();
-    router.push('/login');
-  }
-
   return (
     <div className="flex items-center gap-3">
       <Avatar>
@@ -47,7 +42,7 @@ export function ProfileCard() {
         <p className="text-sm font-medium">{user?.name || 'Пользователь'}</p>
         <p className="text-muted-foreground text-xs">{user?.email ?? ''}</p>
       </div>
-      <Button variant="outline" size="sm" onClick={handleLogout}>
+      <Button variant="outline" size="sm" onClick={onLogout}>
         Выйти
       </Button>
     </div>

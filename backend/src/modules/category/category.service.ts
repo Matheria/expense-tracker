@@ -17,19 +17,15 @@ export class CategoryService {
   }
 
   async update(userId: string, id: string, dto: UpdateCategoryDto): Promise<Category> {
-    await this.ensureOwned(userId, id);
+    const existing = await this.prisma.category.findUnique({ where: { id } });
+    if (!existing || existing.userId !== userId) {
+      throw new NotFoundException('Category not found');
+    }
     return this.prisma.category.update({ where: { id }, data: dto });
   }
 
   async remove(userId: string, id: string): Promise<void> {
-    await this.ensureOwned(userId, id);
-    await this.prisma.category.delete({ where: { id } });
-  }
-
-  private async ensureOwned(userId: string, id: string): Promise<void> {
-    const category = await this.prisma.category.findUnique({ where: { id } });
-    if (!category || category.userId !== userId) {
-      throw new NotFoundException('Category not found');
-    }
+    const { count } = await this.prisma.category.deleteMany({ where: { id, userId } });
+    if (count === 0) throw new NotFoundException('Category not found');
   }
 }

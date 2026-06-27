@@ -59,23 +59,31 @@ export class TransactionService {
   }
 
   async findOne(userId: string, id: string): Promise<Transaction> {
-    return this.ensureOwned(userId, id);
+    const transaction = await this.prisma.transaction.findUnique({ where: { id } });
+    if (!transaction || transaction.userId !== userId) {
+      throw new NotFoundException('Transaction not found');
+    }
+    return transaction;
   }
 
   async update(userId: string, id: string, dto: UpdateTransactionDto): Promise<Transaction> {
-    await this.ensureOwned(userId, id);
+    const existing = await this.prisma.transaction.findUnique({ where: { id } });
+    if (!existing || existing.userId !== userId) {
+      throw new NotFoundException('Transaction not found');
+    }
     if (dto.categoryId) await this.ensureCategoryOwned(userId, dto.categoryId);
     return this.prisma.transaction.update({ where: { id }, data: dto });
   }
 
   async remove(userId: string, id: string): Promise<void> {
-    await this.ensureOwned(userId, id);
-    await this.prisma.transaction.delete({ where: { id } });
+    const { count } = await this.prisma.transaction.deleteMany({ where: { id, userId } });
+    if (count === 0) throw new NotFoundException('Transaction not found');
   }
 
   async summary(userId: string, { month, year }: SummaryQueryDto): Promise<TransactionSummary> {
-    const start = new Date(year, month - 1, 1);
-    const end = new Date(year, month, 1);
+    // Use Date.UTC to avoid server-timezone-dependent month boundaries.
+    const start = new Date(Date.UTC(year, month - 1, 1));
+    const end = new Date(Date.UTC(year, month, 1));
     const where: Prisma.TransactionWhereInput = { userId, date: { gte: start, lt: end } };
 
     const byType = await this.prisma.transaction.groupBy({
@@ -106,14 +114,6 @@ export class TransactionService {
   ): number {
     const row = rows.find((r) => r.type === type);
     return Number(row?._sum.amount ?? 0);
-  }
-
-  private async ensureOwned(userId: string, id: string): Promise<Transaction> {
-    const transaction = await this.prisma.transaction.findUnique({ where: { id } });
-    if (!transaction || transaction.userId !== userId) {
-      throw new NotFoundException('Transaction not found');
-    }
-    return transaction;
   }
 
   private async ensureCategoryOwned(userId: string, categoryId: string): Promise<void> {

@@ -61,7 +61,7 @@ export function CreateTransactionDialog({ onCreated }: CreateTransactionDialogPr
   const form = useForm<TransactionFormValues>({
     resolver: zodResolver(transactionSchema),
     defaultValues: {
-      amount: undefined as unknown as number,
+      amount: '' as unknown as number,
       type: 'EXPENSE',
       description: '',
       date: today(),
@@ -85,7 +85,7 @@ export function CreateTransactionDialog({ onCreated }: CreateTransactionDialogPr
         description: values.description || undefined,
         date: new Date(values.date).toISOString(),
       });
-      form.reset({ amount: undefined as unknown as number, type: 'EXPENSE', description: '', date: today(), categoryId: '' });
+      form.reset({ amount: '' as unknown as number, type: 'EXPENSE', description: '', date: today(), categoryId: '' });
       setOpen(false);
       onCreated?.();
     } catch (err) {

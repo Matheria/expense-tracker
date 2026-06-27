@@ -2,14 +2,13 @@ export type TransactionType = 'INCOME' | 'EXPENSE';
 
 export interface Transaction {
   id: string;
-  amount: number;
+  amount: string;
   type: TransactionType;
   description?: string | null;
   date: string;
   categoryId: string;
   userId: string;
   createdAt: string;
-  updatedAt: string;
 }
 
 export interface Paginated<T> {

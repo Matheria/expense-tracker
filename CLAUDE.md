@@ -41,7 +41,7 @@ docker compose up -d       # Start PostgreSQL
 
 PostgreSQL connection: `postgresql://postgres:postgres@localhost:5432/expence_tracker`
 
-Prisma schema is at `backend/prisma/schema.prisma`. Models: User, Expense.
+Prisma schema is at `backend/prisma/schema.prisma`. Models: User, Category, Transaction.
 
 ## Frontend Architecture — Feature Slice Design (FSD)
 
@@ -110,6 +110,29 @@ Branch names: lowercase, hyphens only, no slashes beyond the type prefix.
 | `test` | adding or updating tests |
 
 Body is optional — use it when the **why** isn't obvious from the title.
+
+## Pull Requests
+
+Title follows the same Conventional Commits format as commit messages (`type: short description`).
+
+PR body template:
+
+```markdown
+## Что сделано
+- краткий буллет на каждое логическое изменение
+
+## API (если добавлены/изменены эндпоинты)
+| Method | Endpoint | Auth | Описание |
+|--------|----------|------|----------|
+| POST   | /api/... | —    | ...      |
+
+## Тест-план
+- [ ] ...
+```
+
+- Один PR — одна задача; не смешивать фичи с рефакторингом если это не связано.
+- Перед открытием PR убедиться: `pnpm lint` зелёный, `tsc --noEmit` без ошибок.
+- Удалять ветку после мержа.
 
 ## Code Style
 
