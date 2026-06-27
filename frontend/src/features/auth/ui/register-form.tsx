@@ -9,6 +9,7 @@ import { z } from 'zod';
 import axios from 'axios';
 
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Form,
   FormControl,
@@ -28,6 +29,7 @@ const registerSchema = z.object({
     .string()
     .min(8, 'Минимум 8 символов')
     .max(72, 'Максимум 72 символа'),
+  terms: z.boolean().refine((v) => v, 'Необходимо принять условия'),
 });
 
 type RegisterFormValues = z.infer<typeof registerSchema>;
@@ -39,7 +41,7 @@ export function RegisterForm() {
 
   const form = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
-    defaultValues: { name: '', email: '', password: '' },
+    defaultValues: { name: '', email: '', password: '', terms: false },
   });
 
   async function onSubmit(values: RegisterFormValues) {
@@ -103,6 +105,44 @@ export function RegisterForm() {
                   {...field}
                 />
               </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="terms"
+          render={({ field }) => (
+            <FormItem>
+              <div className="flex items-start gap-2">
+                <FormControl>
+                  <Checkbox
+                    id="terms"
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                    className="mt-0.5 shrink-0"
+                  />
+                </FormControl>
+                <label htmlFor="terms" className="text-sm leading-snug cursor-pointer">
+                  Согласен с{' '}
+                  <Link
+                    href="/terms"
+                    className="text-primary underline-offset-4 hover:underline"
+                    target="_blank"
+                  >
+                    пользовательским соглашением
+                  </Link>{' '}
+                  и{' '}
+                  <Link
+                    href="/privacy"
+                    className="text-primary underline-offset-4 hover:underline"
+                    target="_blank"
+                  >
+                    политикой обработки данных
+                  </Link>
+                </label>
+              </div>
               <FormMessage />
             </FormItem>
           )}
