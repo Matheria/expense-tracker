@@ -48,7 +48,6 @@ export function useDashboard(refreshKey = 0): DashboardData {
 
   useEffect(() => {
     let active = true;
-    setLoaded(false);
     Promise.all([
       categoryApi.list().then(({ data }) => data),
       transactionApi.list({ page: 1, limit: RAIL_LIMIT }).then(({ data }) => data.data),

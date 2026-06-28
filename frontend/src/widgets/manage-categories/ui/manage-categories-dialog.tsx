@@ -30,33 +30,36 @@ export function ManageCategoriesDialog({ onChanged, trigger }: ManageCategoriesD
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const load = () => {
-    let active = true;
-    setLoading(true);
-    categoryApi
-      .list()
-      .then(({ data }) => { if (active) setCategories(data); })
-      .catch(() => { if (active) setCategories([]); })
-      .finally(() => { if (active) setLoading(false); });
-    return () => { active = false; };
-  };
-
   useEffect(() => {
     if (!open) return;
-    return load();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    let active = true;
+    categoryApi
+      .list()
+      .then(({ data }) => { if (active) { setCategories(data); setLoading(false); } })
+      .catch(() => { if (active) { setCategories([]); setLoading(false); } });
+    return () => { active = false; };
   }, [open]);
 
   const handleMutated = () => {
-    load();
+    setLoading(true);
+    categoryApi
+      .list()
+      .then(({ data }) => setCategories(data))
+      .catch(() => setCategories([]))
+      .finally(() => setLoading(false));
     onChanged?.();
   };
+
+  function handleOpenChange(v: boolean) {
+    if (v) setLoading(true);
+    setOpen(v);
+  }
 
   const income = categories.filter((c) => c.type === 'INCOME');
   const expense = categories.filter((c) => c.type === 'EXPENSE');
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger render={trigger ?? <Button variant="outline">Категории</Button>} />
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
