@@ -40,12 +40,12 @@ export class QueryTransactionsDto {
   @Min(1)
   page?: number;
 
-  /** Количество записей на странице (1–100). По умолчанию — 10. */
-  @ApiPropertyOptional({ description: 'Записей на странице (1–100)', example: 10, minimum: 1, maximum: 100, default: 10 })
+  /** Количество записей на странице (1–500). По умолчанию — 10. */
+  @ApiPropertyOptional({ description: 'Записей на странице (1–500)', example: 10, minimum: 1, maximum: 500, default: 10 })
   @IsOptional()
   @Type(() => Number)
   @IsInt()
   @Min(1)
-  @Max(100)
+  @Max(500)
   limit?: number;
 }
