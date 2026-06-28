@@ -46,7 +46,8 @@ export function RegisterForm() {
 
   async function onSubmit(values: RegisterFormValues) {
     setServerError(null);
-    const payload = { ...values, name: values.name || undefined };
+    const { terms: _, ...rest } = values;
+    const payload = { ...rest, name: rest.name || undefined };
     try {
       const { data } = await authApi.register(payload);
       setToken(data.accessToken);
