@@ -4,4 +4,5 @@ import type { Category, CreateCategoryPayload } from '@/entities/category/model/
 export const categoryApi = {
   list: () => http.get<Category[]>('/categories'),
   create: (data: CreateCategoryPayload) => http.post<Category>('/categories', data),
+  remove: (id: string) => http.delete(`/categories/${id}`),
 };

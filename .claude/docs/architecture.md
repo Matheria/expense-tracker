@@ -99,7 +99,13 @@ frontend/src/
 │   ├── login/
 │   └── register/
 ├── widgets/       # Самодостаточные UI-блоки (несколько фич + UI)
-│   └── home-header/
+│   ├── app-sidebar/         # Тёмный сайдбар: профиль, навигация, действия, выход
+│   ├── balance-card/        # Hero-карточка баланса (мотив-глобус)
+│   ├── stats-strip/         # Полоса метрик: транзакций / доходы / расходы
+│   ├── category-breakdown/  # Карточки топ-категорий по тратам
+│   ├── spending-chart/      # Столбчатая динамика доходов/расходов по месяцам
+│   ├── transactions-rail/   # Правая лента транзакций с фильтром Все/Доходы/Расходы
+│   └── tip-card/            # Тёмная карточка с советом (мотив-глобус)
 ├── features/      # Пользовательские фичи
 │   ├── auth/
 │   │   ├── api/   # auth.api.ts — register/login запросы
@@ -107,8 +113,9 @@ frontend/src/
 │   │   └── ui/    # login-form.tsx, register-form.tsx
 │   ├── create-category/
 │   ├── create-transaction/
-│   ├── transactions-list/
-│   └── profile/
+│   └── dashboard/           # Агрегаты дашборда
+│       ├── lib/   # format.ts — деньги/даты (RUB, ru-RU)
+│       └── model/ # use-dashboard.ts — выборка + расчёт баланса/категорий/месяцев
 ├── entities/      # Доменные объекты с API-методами и типами
 │   ├── category/  # api/, model/types.ts, index.ts
 │   ├── transaction/
@@ -116,8 +123,16 @@ frontend/src/
 └── shared/        # Кросс-слойные утилиты — никогда не импортирует верхние слои
     ├── api/       # http.ts — Axios instance с Bearer-интерцептором
     ├── config/    # env.ts — NEXT_PUBLIC_API_URL
-    └── ui/        # (через shadcn: frontend/src/components/ui/)
+    └── ui/        # globe.tsx (декоративный мотив); shadcn: frontend/src/components/ui/
 ```
+
+### Дизайн-система
+
+«Soft fintech ledger» — светлый серый холст, белые карточки, near-black чернила
+(`--ink #1a1b1d`), мягкие акценты `--sky` (баланс) и `--mint` (выделенная категория),
+`--income` для положительных сумм. Дисплейный шрифт — **Manrope** (`--font-display`,
+крупные суммы), тело — **Geist** (`--font-sans`). Токены в `frontend/src/app/globals.css`.
+Главный экран — оболочка из трёх зон: тёмный сайдбар | дашборд | лента транзакций.
 
 ### Ключевые решения
 

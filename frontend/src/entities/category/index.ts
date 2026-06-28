@@ -1,2 +1,2 @@
 export { categoryApi } from './api/category.api';
-export type { Category, CreateCategoryPayload } from './model/types';
+export type { Category, CategoryType, CreateCategoryPayload } from './model/types';

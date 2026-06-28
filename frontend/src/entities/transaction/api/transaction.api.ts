@@ -10,4 +10,5 @@ export const transactionApi = {
   list: (params: ListTransactionsParams = {}) =>
     http.get<Paginated<Transaction>>('/transactions', { params }),
   create: (data: CreateTransactionPayload) => http.post<Transaction>('/transactions', data),
+  remove: (id: string) => http.delete(`/transactions/${id}`),
 };

@@ -34,6 +34,7 @@ import {
 } from '@/components/ui/select';
 import { categoryApi, type Category } from '@/entities/category';
 import { transactionApi } from '@/entities/transaction';
+import { CategoryIcon } from '@/shared/ui/category-icon';
 
 const transactionSchema = z.object({
   amount: z.coerce.number({ invalid_type_error: 'Введите сумму' }).positive('Сумма должна быть больше 0'),
@@ -52,9 +53,11 @@ function today(): string {
 
 interface CreateTransactionDialogProps {
   onCreated?: () => void;
+  /** Custom trigger element. Falls back to a default button. */
+  trigger?: React.ReactElement;
 }
 
-export function CreateTransactionDialog({ onCreated }: CreateTransactionDialogProps) {
+export function CreateTransactionDialog({ onCreated, trigger }: CreateTransactionDialogProps) {
   const [open, setOpen] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
   const [serverError, setServerError] = useState<string | null>(null);
@@ -70,6 +73,9 @@ export function CreateTransactionDialog({ onCreated }: CreateTransactionDialogPr
     },
   });
 
+  const selectedType = form.watch('type');
+  const filteredCategories = categories.filter((c) => c.type === selectedType);
+
   useEffect(() => {
     if (!open) return;
     categoryApi
@@ -77,6 +83,11 @@ export function CreateTransactionDialog({ onCreated }: CreateTransactionDialogPr
       .then(({ data }) => setCategories(data))
       .catch(() => setCategories([]));
   }, [open]);
+
+  // Сбрасываем категорию при смене типа, чтобы не сохранить несовместимую пару
+  useEffect(() => {
+    form.setValue('categoryId', '');
+  }, [selectedType, form]);
 
   async function onSubmit(values: TransactionFormValues) {
     setServerError(null);
@@ -100,7 +111,7 @@ export function CreateTransactionDialog({ onCreated }: CreateTransactionDialogPr
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={<Button>Добавить транзакцию</Button>} />
+      <DialogTrigger render={trigger ?? <Button>Добавить транзакцию</Button>} />
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Новая транзакция</DialogTitle>
@@ -130,11 +141,13 @@ export function CreateTransactionDialog({ onCreated }: CreateTransactionDialogPr
                   <FormItem className="flex-1">
                     <FormLabel>Тип</FormLabel>
                     <FormControl>
-                      <Select value={field.value} onValueChange={field.onChange}>
+                      <Select modal={false} value={field.value} onValueChange={field.onChange}>
                         <SelectTrigger className="w-full">
-                          <SelectValue />
+                          <SelectValue>
+                            {(value) => (value === 'INCOME' ? 'Доход' : 'Расход')}
+                          </SelectValue>
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent alignItemWithTrigger={false}>
                           <SelectItem value="EXPENSE">Расход</SelectItem>
                           <SelectItem value="INCOME">Доход</SelectItem>
                         </SelectContent>
@@ -153,7 +166,7 @@ export function CreateTransactionDialog({ onCreated }: CreateTransactionDialogPr
                 <FormItem>
                   <FormLabel>Категория</FormLabel>
                   <FormControl>
-                    <Select value={field.value} onValueChange={field.onChange}>
+                    <Select modal={false} value={field.value} onValueChange={field.onChange}>
                       <SelectTrigger className="w-full">
                         <SelectValue>
                           {(value) =>
@@ -162,14 +175,21 @@ export function CreateTransactionDialog({ onCreated }: CreateTransactionDialogPr
                         </SelectValue>
                       </SelectTrigger>
                       <SelectContent>
-                        {categories.length === 0 ? (
+                        {filteredCategories.length === 0 ? (
                           <SelectItem value="" disabled>
-                            Нет категорий — создайте сначала
+                            {categories.length === 0
+                              ? 'Нет категорий — создайте сначала'
+                              : `Нет категорий ${selectedType === 'INCOME' ? 'доходов' : 'расходов'}`}
                           </SelectItem>
                         ) : (
-                          categories.map((category) => (
+                          filteredCategories.map((category) => (
                             <SelectItem key={category.id} value={category.id}>
-                              <span style={{ color: category.color }}>{category.icon}</span>
+                              <span
+                                className="inline-flex items-center"
+                                style={{ color: category.color }}
+                              >
+                                <CategoryIcon name={category.icon} size={16} />
+                              </span>
                               {category.name}
                             </SelectItem>
                           ))

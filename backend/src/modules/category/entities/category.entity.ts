@@ -1,4 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { TransactionType } from '@prisma/client';
 
 /** Swagger-представление записи категории (зеркалит Prisma-модель Category). */
 export class CategoryEntity {
@@ -13,6 +14,9 @@ export class CategoryEntity {
 
   @ApiProperty({ description: 'Иконка категории', example: 'shopping-cart', maxLength: 50 })
   icon!: string;
+
+  @ApiProperty({ description: 'Тип категории', enum: TransactionType, example: TransactionType.EXPENSE })
+  type!: TransactionType;
 
   @ApiProperty({ description: 'UUID владельца категории', example: '550e8400-e29b-41d4-a716-446655440000' })
   userId!: string;
