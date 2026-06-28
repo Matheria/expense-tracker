@@ -7,8 +7,14 @@ export const http = axios.create({
   headers: { 'Content-Type': 'application/json' },
 });
 
+let getToken: () => string | null = () => null;
+
+export function configureAuth(tokenGetter: () => string | null): void {
+  getToken = tokenGetter;
+}
+
 http.interceptors.request.use((config) => {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
+  const token = getToken();
   if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });

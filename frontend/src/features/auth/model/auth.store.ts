@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
+import { configureAuth } from '@/shared/api/http';
+
 interface AuthState {
   accessToken: string | null;
   setToken: (token: string) => void;
@@ -19,3 +21,5 @@ export const useAuthStore = create<AuthState>()(
 );
 
 export const selectIsAuthenticated = (state: AuthState) => !!state.accessToken;
+
+configureAuth(() => useAuthStore.getState().accessToken);

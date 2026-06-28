@@ -1,5 +1,5 @@
 {
-  "name": "expence-tracker",
+  "name": "expense-tracker",
   "version": "1.0.0",
   "private": true,
   "scripts": {
@@ -19,5 +19,8 @@
       "sharp",
       "unrs-resolver"
     ]
+  },
+  "devDependencies": {
+    "prettier": "^3.8.5"
   }
 }
