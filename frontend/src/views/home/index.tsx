@@ -41,7 +41,7 @@ export function HomePage() {
   }
 
   const refresh = () => setRefreshKey((k) => k + 1);
-  const topCategory = data.byCategory[0]?.category.name;
+  const topCategory = data.byCategory.find((c) => c.category.type === 'EXPENSE')?.category.name;
 
   return (
     <div className="min-h-screen bg-background p-4 lg:flex lg:h-screen lg:gap-4 lg:overflow-hidden">
