@@ -1,9 +1,9 @@
 [build]
 builder = "nixpacks"
-buildCommand = "pnpm install && pnpm prisma:generate && pnpm build"
+buildCommand = "npm run prisma:generate && npm run build"
 
 [deploy]
-startCommand = "pnpm start:prod"
+startCommand = "npm run start:prod"
 healthcheckPath = "/api"
 healthcheckTimeout = 30
 restartPolicyType = "on_failure"
