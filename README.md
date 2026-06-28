@@ -30,7 +30,7 @@ pnpm install
 Создайте файл `backend/.env`:
 
 ```env
-DATABASE_URL="postgresql://postgres:postgres@localhost:5432/expence_tracker"
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/expense_tracker"
 JWT_SECRET="your-secret-key"
 JWT_EXPIRATION="7d"
 ```
@@ -65,7 +65,7 @@ Swagger UI доступен по адресу **http://localhost:3001/docs**.
 ## Структура проекта
 
 ```
-expence-tracker/
+expense-tracker/
 ├── frontend/                   # Next.js 16 приложение
 │   └── src/
 │       ├── app/                # App Router — роутинг, тонкие обёртки

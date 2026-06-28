@@ -35,7 +35,7 @@ docker compose up -d       # Start PostgreSQL
 
 ## Database
 
-PostgreSQL connection: `postgresql://postgres:postgres@localhost:5432/expence_tracker`
+PostgreSQL connection: `postgresql://postgres:postgres@localhost:5432/expense_tracker`
 
 Prisma schema is at `backend/prisma/schema.prisma`. Models: User, Category, Transaction.
 

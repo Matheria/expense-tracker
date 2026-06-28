@@ -32,6 +32,7 @@ import { UpdateTransactionDto } from './dto/update-transaction.dto';
 import { PaginatedTransactionsEntity } from './entities/paginated-transactions.entity';
 import { TransactionEntity } from './entities/transaction.entity';
 import { TransactionSummaryEntity } from './entities/transaction-summary.entity';
+import { TransactionTotalsEntity } from './entities/transaction-totals.entity';
 import { TransactionService } from './transaction.service';
 
 /**
@@ -84,6 +85,23 @@ export class TransactionController {
   @Get()
   findAll(@CurrentUser('id') userId: string, @Query() query: QueryTransactionsDto) {
     return this.transactionService.findAll(userId, query);
+  }
+
+  /**
+   * Возвращает общую финансовую сводку пользователя за всё время.
+   *
+   * `GET /api/transactions/totals`
+   *
+   * Маршрут объявлен до `:id`, чтобы избежать перехвата строки `totals` как UUID.
+   *
+   * @param userId - UUID пользователя из JWT.
+   * @returns Объект `TransactionTotals` с суммарными доходом, расходом, балансом и количеством.
+   */
+  @ApiOperation({ summary: 'Общая финансовая сводка за всё время' })
+  @ApiOkResponse({ type: TransactionTotalsEntity, description: 'Сводка за всё время' })
+  @Get('totals')
+  totals(@CurrentUser('id') userId: string) {
+    return this.transactionService.totals(userId);
   }
 
   /**

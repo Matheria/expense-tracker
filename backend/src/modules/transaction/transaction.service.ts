@@ -1,5 +1,5 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { Prisma, Transaction, TransactionType } from '@prisma/client';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { Category, Prisma, Transaction, TransactionType } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { QueryTransactionsDto } from './dto/query-transactions.dto';
@@ -53,7 +53,10 @@ export class TransactionService {
    * @throws {NotFoundException} Если категория не найдена или не принадлежит пользователю.
    */
   async create(userId: string, dto: CreateTransactionDto): Promise<Transaction> {
-    await this.ensureCategoryOwned(userId, dto.categoryId);
+    const category = await this.ensureCategoryOwned(userId, dto.categoryId);
+    if (category.type !== dto.type) {
+      throw new BadRequestException('Category type does not match transaction type');
+    }
     return this.prisma.transaction.create({ data: { ...dto, userId } });
   }
 
@@ -126,7 +129,15 @@ export class TransactionService {
     if (!existing || existing.userId !== userId) {
       throw new NotFoundException('Transaction not found');
     }
-    if (dto.categoryId) await this.ensureCategoryOwned(userId, dto.categoryId);
+    // Validate category-type consistency when either field changes.
+    if (dto.categoryId || dto.type) {
+      const effectiveCategoryId = dto.categoryId ?? existing.categoryId;
+      const effectiveType = dto.type ?? existing.type;
+      const category = await this.ensureCategoryOwned(userId, effectiveCategoryId);
+      if (category.type !== effectiveType) {
+        throw new BadRequestException('Category type does not match transaction type');
+      }
+    }
     try {
       return await this.prisma.transaction.update({ where: { id }, data: dto });
     } catch (e) {
@@ -208,20 +219,41 @@ export class TransactionService {
   }
 
   /**
-   * Проверяет, что категория существует и принадлежит пользователю.
+   * Возвращает общую финансовую сводку пользователя за всё время.
    *
-   * Выбрасывает исключение при любом несоответствии, чтобы предотвратить
-   * привязку транзакций к чужим категориям.
+   * Агрегирует данные на стороне БД — не зависит от числа транзакций.
+   *
+   * @param userId - UUID аутентифицированного пользователя.
+   * @returns Объект с `income`, `expense`, `balance` и `count`.
+   */
+  async totals(userId: string): Promise<{ income: number; expense: number; balance: number; count: number }> {
+    const [byType, count] = await Promise.all([
+      this.prisma.transaction.groupBy({
+        by: ['type'],
+        where: { userId },
+        _sum: { amount: true },
+        orderBy: { type: 'asc' },
+      }),
+      this.prisma.transaction.count({ where: { userId } }),
+    ]);
+    const income = this.sumFor(byType, TransactionType.INCOME);
+    const expense = this.sumFor(byType, TransactionType.EXPENSE);
+    return { income, expense, balance: income - expense, count };
+  }
+
+  /**
+   * Проверяет, что категория существует и принадлежит пользователю.
    *
    * @param userId - UUID аутентифицированного пользователя.
    * @param categoryId - UUID проверяемой категории.
-   * @returns `void`
+   * @returns Найденная категория.
    * @throws {NotFoundException} Если категория не найдена или принадлежит другому пользователю.
    */
-  private async ensureCategoryOwned(userId: string, categoryId: string): Promise<void> {
+  private async ensureCategoryOwned(userId: string, categoryId: string): Promise<Category> {
     const category = await this.prisma.category.findUnique({ where: { id: categoryId } });
     if (!category || category.userId !== userId) {
       throw new NotFoundException('Category not found');
     }
+    return category;
   }
 }

@@ -1,6 +1,5 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { TransactionType } from '@prisma/client';
-import { IsEnum, IsNotEmpty, IsOptional, IsString, Matches, MaxLength } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString, Matches, MaxLength } from 'class-validator';
 
 /** DTO для частичного обновления категории. Все поля опциональны. */
 export class UpdateCategoryDto {
@@ -35,9 +34,4 @@ export class UpdateCategoryDto {
   @IsNotEmpty()
   @MaxLength(50)
   icon?: string;
-
-  @ApiPropertyOptional({ description: 'Тип категории', enum: TransactionType, example: TransactionType.EXPENSE })
-  @IsOptional()
-  @IsEnum(TransactionType)
-  type?: TransactionType;
 }

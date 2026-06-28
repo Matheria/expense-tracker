@@ -78,16 +78,13 @@ export function CreateTransactionDialog({ onCreated, trigger }: CreateTransactio
 
   useEffect(() => {
     if (!open) return;
+    let active = true;
     categoryApi
       .list()
-      .then(({ data }) => setCategories(data))
-      .catch(() => setCategories([]));
+      .then(({ data }) => { if (active) setCategories(data); })
+      .catch(() => { if (active) setCategories([]); });
+    return () => { active = false; };
   }, [open]);
-
-  // Сбрасываем категорию при смене типа, чтобы не сохранить несовместимую пару
-  useEffect(() => {
-    form.setValue('categoryId', '');
-  }, [selectedType, form]);
 
   async function onSubmit(values: TransactionFormValues) {
     setServerError(null);
@@ -110,7 +107,7 @@ export function CreateTransactionDialog({ onCreated, trigger }: CreateTransactio
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) setServerError(null); }}>
       <DialogTrigger render={trigger ?? <Button>Добавить транзакцию</Button>} />
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
@@ -141,7 +138,14 @@ export function CreateTransactionDialog({ onCreated, trigger }: CreateTransactio
                   <FormItem className="flex-1">
                     <FormLabel>Тип</FormLabel>
                     <FormControl>
-                      <Select modal={false} value={field.value} onValueChange={field.onChange}>
+                      <Select
+                        modal={false}
+                        value={field.value}
+                        onValueChange={(v) => {
+                          field.onChange(v);
+                          form.setValue('categoryId', '');
+                        }}
+                      >
                         <SelectTrigger className="w-full">
                           <SelectValue>
                             {(value) => (value === 'INCOME' ? 'Доход' : 'Расход')}

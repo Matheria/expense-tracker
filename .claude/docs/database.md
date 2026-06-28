@@ -2,7 +2,7 @@
 
 PostgreSQL 16. ORM — Prisma 6. Схема: `backend/prisma/schema.prisma`.
 
-Локальное подключение: `postgresql://postgres:postgres@localhost:5432/expence_tracker`
+Локальное подключение: `postgresql://postgres:postgres@localhost:5432/expense_tracker`
 
 ---
 

@@ -28,6 +28,13 @@ export interface ListTransactionsParams {
   dateTo?: string;
 }
 
+export interface TransactionTotals {
+  income: number;
+  expense: number;
+  balance: number;
+  count: number;
+}
+
 export interface CreateTransactionPayload {
   amount: number;
   type: TransactionType;

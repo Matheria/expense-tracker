@@ -1,9 +1,11 @@
 # Dependencies
 node_modules/
 
+.playwright-mcp
 # Next.js
 .next/
 out/
+*.tsbuildinfo
 
 # NestJS
 dist/

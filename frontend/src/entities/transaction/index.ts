@@ -4,5 +4,6 @@ export type {
   ListTransactionsParams,
   Paginated,
   Transaction,
+  TransactionTotals,
   TransactionType,
 } from './model/types';

@@ -77,7 +77,7 @@ export function CreateCategoryDialog({ onCreated, trigger }: CreateCategoryDialo
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) setServerError(null); }}>
       <DialogTrigger render={trigger ?? <Button variant="outline">Категории</Button>} />
       <DialogContent className="sm:max-w-md">
         <DialogHeader>

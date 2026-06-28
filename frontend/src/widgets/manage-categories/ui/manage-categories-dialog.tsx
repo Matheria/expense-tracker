@@ -31,24 +31,23 @@ export function ManageCategoriesDialog({ onChanged, trigger }: ManageCategoriesD
   const [loading, setLoading] = useState(false);
 
   const load = () => {
+    let active = true;
     setLoading(true);
     categoryApi
       .list()
-      .then(({ data }) => setCategories(data))
-      .catch(() => setCategories([]))
-      .finally(() => setLoading(false));
+      .then(({ data }) => { if (active) setCategories(data); })
+      .catch(() => { if (active) setCategories([]); })
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
   };
 
   useEffect(() => {
-    if (open) load();
+    if (!open) return;
+    return load();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
-  const handleCreated = () => {
-    load();
-    onChanged?.();
-  };
-
-  const handleDeleted = () => {
+  const handleMutated = () => {
     load();
     onChanged?.();
   };
@@ -74,13 +73,13 @@ export function ManageCategoriesDialog({ onChanged, trigger }: ManageCategoriesD
                 title="Доходы"
                 items={income}
                 emptyLabel="Нет категорий доходов"
-                onDeleted={handleDeleted}
+                onDeleted={handleMutated}
               />
               <CategoryGroup
                 title="Расходы"
                 items={expense}
                 emptyLabel="Нет категорий расходов"
-                onDeleted={handleDeleted}
+                onDeleted={handleMutated}
               />
             </>
           )}
@@ -88,7 +87,7 @@ export function ManageCategoriesDialog({ onChanged, trigger }: ManageCategoriesD
 
         <DialogFooter>
           <CreateCategoryDialog
-            onCreated={handleCreated}
+            onCreated={handleMutated}
             trigger={
               <Button variant="outline" className="w-full gap-2">
                 <Plus size={14} />
@@ -140,18 +139,20 @@ function CategoryRow({
 }) {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
-  const [conflictError, setConflictError] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const handleDelete = async () => {
     setDeleting(true);
-    setConflictError(false);
+    setErrorMsg(null);
     try {
       await categoryApi.remove(category.id);
       setConfirmOpen(false);
       onDeleted();
     } catch (err) {
       if (axios.isAxiosError(err) && err.response?.status === 409) {
-        setConflictError(true);
+        setErrorMsg('Нельзя удалить категорию: к ней привязаны транзакции.');
+      } else {
+        setErrorMsg('Не удалось удалить категорию. Попробуйте ещё раз.');
       }
     } finally {
       setDeleting(false);
@@ -184,34 +185,23 @@ function CategoryRow({
 
       <Dialog
         open={confirmOpen}
-        onOpenChange={(v) => {
-          setConfirmOpen(v);
-          if (!v) setConflictError(false);
-        }}
+        onOpenChange={(v) => { setConfirmOpen(v); if (!v) setErrorMsg(null); }}
       >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Удалить категорию?</DialogTitle>
             <DialogDescription>
-              {conflictError
-                ? 'Нельзя удалить категорию: к ней привязаны транзакции.'
-                : `Категория «${category.name}» будет удалена навсегда.`}
+              {errorMsg ?? `Категория «${category.name}» будет удалена навсегда.`}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            {conflictError ? (
-              <Button variant="outline" onClick={() => setConfirmOpen(false)}>
-                Закрыть
+            <Button variant="outline" onClick={() => setConfirmOpen(false)} disabled={deleting}>
+              {errorMsg ? 'Закрыть' : 'Отмена'}
+            </Button>
+            {!errorMsg && (
+              <Button variant="destructive" onClick={handleDelete} disabled={deleting}>
+                {deleting ? 'Удаление…' : 'Удалить'}
               </Button>
-            ) : (
-              <>
-                <Button variant="outline" onClick={() => setConfirmOpen(false)} disabled={deleting}>
-                  Отмена
-                </Button>
-                <Button variant="destructive" onClick={handleDelete} disabled={deleting}>
-                  {deleting ? 'Удаление…' : 'Удалить'}
-                </Button>
-              </>
             )}
           </DialogFooter>
         </DialogContent>

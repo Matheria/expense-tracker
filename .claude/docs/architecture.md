@@ -5,7 +5,7 @@
 Монорепозиторий на pnpm workspaces. Два воркспейса: `frontend/` и `backend/`. Корневой `package.json` содержит только скрипты-прокси и настройку pnpm.
 
 ```
-expence-tracker/
+expense-tracker/
 ├── frontend/          # Next.js 16 (App Router)
 ├── backend/           # NestJS 11
 ├── docker-compose.yml # PostgreSQL 16

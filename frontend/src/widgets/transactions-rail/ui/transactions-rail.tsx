@@ -106,14 +106,18 @@ function Row({
 }) {
   const [open, setOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState(false);
   const income = tx.type === 'INCOME';
 
   const handleDelete = async () => {
     setDeleting(true);
+    setDeleteError(false);
     try {
       await transactionApi.remove(tx.id);
       setOpen(false);
       onDelete?.();
+    } catch {
+      setDeleteError(true);
     } finally {
       setDeleting(false);
     }
@@ -152,12 +156,14 @@ function Row({
         </button>
       </li>
 
-      <Dialog open={open} onOpenChange={setOpen}>
+      <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) setDeleteError(false); }}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Удалить транзакцию?</DialogTitle>
             <DialogDescription>
-              Это действие необратимо. Транзакция будет удалена навсегда.
+              {deleteError
+                ? 'Не удалось удалить транзакцию. Попробуйте ещё раз.'
+                : 'Это действие необратимо. Транзакция будет удалена навсегда.'}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
